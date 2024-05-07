@@ -23,7 +23,12 @@ func parseCaddyfileHandler(h httpcaddyfile.Helper) (caddyhttp.MiddlewareHandler,
 
 // UnmarshalCaddyfile implements caddyfile.Unmarshaler. Syntax:
 //
-//	random_delay <name> [<option>]
+//	random_delay <percent_delayed> <duration>
+//
+// When radnom_delay is used, precent_delayed of requests will be delayed
+// by <duration> before the request is passed to the next handler. This can
+// be helpful in scenarios where latency or timeouts need to be simulated such
+// as when chaos testing or reproducing a problem.
 func (m *Middleware) UnmarshalCaddyfile(d *caddyfile.Dispenser) error {
 	var percent, duration string
 	for d.Next() {
