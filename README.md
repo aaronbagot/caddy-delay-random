@@ -21,7 +21,7 @@ Durations follow [Go's duration format](https://pkg.go.dev/time#ParseDuration) (
 
 ## Always delay (100%) between 500ms and 1.5s
 ```markdown
-#### `Caddyfile`
+**Caddyfile**
 ```caddyfile
 {
     order delay_random before reverse_proxy
@@ -36,7 +36,7 @@ http://localhost:8000 {
 
 ## Delay between 1s and 5s for 30% of requests
 ```markdown
-#### `Caddyfile`
+**Caddyfile**
 ```caddyfile
 {
     order delay_random before reverse_proxy
@@ -51,7 +51,7 @@ http://localhost:8000 {
 
 ## JSON Configuration
 ```markdown
-#### `caddy.json`
+**caddy.json**
 ```json
 {
     "handler": "delay_random",
