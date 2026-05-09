@@ -1,6 +1,6 @@
-module github.com/patrickeasters/caddy-random-delay
+module github.com/aaronbagot/caddy-delay-random
 
-go 1.20
+go 1.21
 
 require github.com/caddyserver/caddy/v2 v2.7.4
 
