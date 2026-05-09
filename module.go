@@ -1,4 +1,8 @@
-package random_delay
+// Copyright 2020 Patrick Easters
+// SPDX-License-Identifier: Apache-2.0
+// Modified by aaronbagot, 2026
+
+package delay_random
 
 import (
 	"fmt"
@@ -14,11 +18,11 @@ func init() {
 	caddy.RegisterModule(Middleware{})
 }
 
-// Middleware implements an HTTP handler that delays approximately PercentDelayed requests
-// by DelayDuration
+// Middleware implements an HTTP handler that delays requests by a random duration.
 type Middleware struct {
-	DelayDuration  time.Duration `json:"delay_duration"`
-	PercentDelayed float64       `json:"percent_delayed"`
+	MinDelay     time.Duration  `json:"min_delay"`
+	MaxDelay     time.Duration  `json:"max_delay"`
+	Probability  *float64       `json:"probability,omitempty"`
 
 	randomSource *rand.Rand
 }
@@ -26,13 +30,19 @@ type Middleware struct {
 // CaddyModule returns the Caddy module information.
 func (Middleware) CaddyModule() caddy.ModuleInfo {
 	return caddy.ModuleInfo{
-		ID:  "http.handlers.random_delay",
+		ID:  "http.handlers.delay_random",
 		New: func() caddy.Module { return new(Middleware) },
 	}
 }
 
-// Provision implements caddy.Provisioner.
+// Provision implements caddy.Provisioner
 func (m *Middleware) Provision(ctx caddy.Context) error {
+	// If probability is not set (nil), default to 1.0 (100%)
+	if m.Probability == nil {
+		defaultProb := 1.0
+		m.Probability = &defaultProb
+	}
+
 	src := rand.NewSource(time.Now().UnixNano())
 	m.randomSource = rand.New(src)
 	return nil
@@ -40,8 +50,17 @@ func (m *Middleware) Provision(ctx caddy.Context) error {
 
 // Validate implements caddy.Validator.
 func (m *Middleware) Validate() error {
-	if m.PercentDelayed < 0 || m.PercentDelayed > 1 {
-		return fmt.Errorf("PercentDelayed must be between 0 and 100")
+	if m.MinDelay < 0 {
+		return fmt.Errorf("min_delay cannot be negative")
+	}
+	if m.MaxDelay < m.MinDelay {
+		return fmt.Errorf("max_delay must be greater than or equal to min_delay")
+	}
+	if m.Probability == nil {
+		return fmt.Errorf("internal error: probability is nil")
+	}
+	if *m.Probability < 0 || *m.Probability > 1 {
+		return fmt.Errorf("probability must be between 0 and 1")
 	}
 	return nil
 }

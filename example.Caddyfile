@@ -1,9 +1,9 @@
 {
-	order random_delay before reverse_proxy
+	order delay_random before reverse_proxy
 }
 
 http://localhost:8000 {
-    random_delay 0.5 10s
+    delay_random 500ms 10s 0.8
 	reverse_proxy https://icanhazip.com {
 		header_up Host {upstream_hostport}
 	}

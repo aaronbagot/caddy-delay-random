@@ -1,34 +1,58 @@
-# caddy-random-delay
-[![Go Reference](https://pkg.go.dev/badge/github.com/patrickeasters/caddy-random-delay.svg)](https://pkg.go.dev/github.com/patrickeasters/caddy-random-delay)
+# caddy-delay-random
+[![Go Reference](https://pkg.go.dev/badge/github.com/aaronbagot/caddy-delay-random.svg)](https://pkg.go.dev/github.com/aaronbagot/caddy-delay-random)
 
-A caddy handler to introduce a delay for some requests
+A Caddy HTTP handler to introduce a random delay for some requests.
 
-# Purpose
-This module was written to facilitate reproducing a problem that occurred when some HTTP requests began taking too long, resulting in client-side timeouts. While one usually doesn't want to make requests take longer, this module could be useful for chaos testing or simulating slow HTTP servers.
+## Purpose
+This module helps reproduce issues caused by slow HTTP requests and is useful for chaos testing or simulating slow backend services.
 
-# Usage
+## Usage (Caddyfile)
+```caddyfile
+delay_random <min_delay> <max_delay> [<probability>]
 ```
-random_delay <percent_delayed> <duration>
-```
 
-The module has only two options:
-* `percent_delayed` is a float that determines the chance a request will be delayed (e.g. `0.2`, `0.69`, `1.0`)
-* `duration` is a string that determines the duration of the delay injected by the module following [Go's duration format](https://pkg.go.dev/time#ParseDuration) (e.g. `10s`, `5m`, `200ms`)
+* `min_delay` — the minimum delay duration (e.g. `100ms`, `500ms`, `1s`)
+* `max_delay` — the maximum delay duration (e.g. `2s`, `5s`, `10s`)
+* `probability` (optional) — Float between `0.0` and `1.0`. Defaults to `1.0` (100%).
 
-A full Caddyfile example is below. This would introduce a 10 second delay to approximately 50% of requests.
+Durations follow [Go's duration format](https://pkg.go.dev/time#ParseDuration) (e.g. `500ms`, `2s`, `1m30s`).
 
-```
+# Examples
+
+## Always delay (100%) between 500ms and 1.5s
+```caddyfile
 {
-	order random_delay before reverse_proxy
+    order delay_random before reverse_proxy
 }
 
 http://localhost:8000 {
-    random_delay 0.5 10s
-	reverse_proxy https://icanhazip.com {
-		header_up Host {upstream_hostport}
-	}
-	log {
-		format console
-	}
+    delay_random 500ms 1.5s
+    reverse_proxy 127.0.0.1:9000
 }
 ```
+
+## Delay between 1s and 5s for 30% of requests
+```caddyfile
+{
+    order delay_random before reverse_proxy
+}
+
+http://localhost:8000 {
+    delay_random 1s 5s 0.3
+    reverse_proxy 127.0.0.1:9000
+}
+```
+
+## JSON Configuration
+```JSON
+{
+    "handler": "delay_random",
+    "min_delay": "500ms",
+    "max_delay": "2s",
+    "probability": 0.75
+}
+```
+
+# License
+This project is a fork of [caddy-random-delay](https://github.com/patrickeasters/caddy-random-delay) by Patrick Easters, licensed under the Apache License 2.0.
+Modifications copyright © 2026 Aaron Bagot.
